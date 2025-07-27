@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-7(z4^an$8+17@_k0$443s7w3v-611j16vn7!9b5_#(+4f2eku(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -126,3 +126,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+#login management
+LOGIN_URL='/accounts/login'
+
+LOGIN_URL_REDIRECT='/tweet/'
+LOGOUT_URL_REDIRECT='/tweet/'
