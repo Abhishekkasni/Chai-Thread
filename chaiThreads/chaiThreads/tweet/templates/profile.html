@@ -1,16 +1,8 @@
 {% extends "layout.html" %}
 {% load time_format %}
-
-{% block title %}
-Chai aur tweet
-{% endblock %}
+{% block title %}Profile of {{profile_user.username}} {% endblock %}
 {% block content %}
-{% comment %} <h1 class="text-center mt-4">List of all tweets</h1> {% endcomment %}
-
-{% comment %} <a class="btn btn-primary mb-4" href="{% url "tweet_create" %}">Create a Tweet</a> {% endcomment %}
-
-<!-- Changed to a vertically stacked list layout with centered tweets using Bootstrap -->
-<div class="container d-flex flex-column align-items-center">
+    <div class="container d-flex flex-column align-items-center">
 
     {% for tweet in tweets %}
         <!-- Changed to list style: each card is full-width with max width, border, spacing -->
@@ -35,9 +27,9 @@ Chai aur tweet
                 </h5>
                 <p class="card-text">{{ tweet.text }}</p>
                 <p class="card-text text-muted" style="font-size: 0.9rem;" title="{{ tweet.created_at }}">
-                    {{ tweet.created_at|twitter_time }} 
+                    {{ tweet.created_at | twitter_time }}
                 </p>
-                {% if tweet.user == user %}
+                {% if tweet.user == request.user %}
                 <a href="{% url "tweet_edit" tweet.id %}" class="btn btn-primary">Edit</a>
                 <a href="{% url "tweet_delete" tweet.id %}" class="btn btn-danger">Delete</a>
                 {% endif %}
@@ -47,5 +39,3 @@ Chai aur tweet
 
 </div>
 {% endblock %}
-
-

@@ -16,6 +16,4 @@ class Tweet(models.Model):
             raise ValidationError('A tweet must have either text, a photo, or a video.')
 
     def __str__(self):
-        return f'{self.user.username} - {self.text[:10]}'
-    
-    
+        return f'{self.user.username}'

@@ -130,5 +130,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 #login management
 LOGIN_URL='/accounts/login'
 
-LOGIN_URL_REDIRECT='/tweet/'
-LOGOUT_URL_REDIRECT='/tweet/'
+LOGIN_REDIRECT_URL='/tweet/'
+LOGOUT_REDIRECT_URL='/tweet/'
