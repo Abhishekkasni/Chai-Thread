@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+{% load time_format %}
+{% block title %}Profile of {{profile_user.username}} {% endblock %}
+{% block content %}
+    <div class="container d-flex flex-column align-items-center">
+
+    {% for tweet in tweets %}
+        <div class="card w-100 border rounded mb-3" style="max-width: 600px;">
+            
+            {% if tweet.original_tweet %}
+                <div class="card-header text-muted" style="font-size: 0.9rem;">
+                    🔁 Reposted from 
+                    <a href="{% url 'profile' tweet.original_tweet.user.username %}" class="text-decoration-none">
+                        @{{ tweet.original_tweet.user.username }}
+                    </a>
+                </div>
+            {% endif %}
+
+            {% if tweet.photo %}
+                <img src="{{ tweet.photo.url }}" class="card-img-top" alt="Tweet image">
+            {% endif %}
+
+            {% if tweet.video %}
+                <video class="card-img-top" controls>
+                    <source src="{{ tweet.video.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            {% endif %}
+
+            <div class="card-body">
+                <h5 class="card-title">
+                    <a href="{% url 'profile' tweet.user.username %}" class="text-decoration-none">
+                        {{ tweet.user.username }}
+                    </a>
+                </h5>
+
+                {% if tweet.text %}
+                    <p class="card-text">{{ tweet.text }}</p>
+                {% endif %}
+
+                {% if tweet.original_tweet %}
+                    <div class="border rounded p-2 mt-2">
+                        <strong>@{{ tweet.original_tweet.user.username }}</strong><br>
+                        {{ tweet.original_tweet.text }}
+                        {% if tweet.original_tweet.photo %}
+                            <img src="{{ tweet.original_tweet.photo.url }}" class="img-fluid mt-2" alt="Original tweet image">
+                        {% endif %}
+                        {% if tweet.original_tweet.video %}
+                            <video class="w-100 mt-2" controls>
+                                <source src="{{ tweet.original_tweet.video.url }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <p class="card-text text-muted" style="font-size: 0.9rem;" title="{{ tweet.created_at }}">
+                    {{ tweet.created_at|twitter_time }} 
+                </p>
+
+                {% if tweet.user == user %}
+                    <a href="{% url "tweet_edit" tweet.id %}?next={{ request.path }}" class="btn btn-primary">Edit</a>
+                    <a href="{% url "tweet_delete" tweet.id %}?next={{ request.path }}" class="btn btn-danger">Delete</a>
+                {% endif %}
+
+                {% if request.user.is_authenticated %}
+                    {% if tweet not in request.user.saved_tweets.all %}
+                        <form action="{% url 'save_tweet' tweet.id %}" method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-primary btn-sm">💾 Save</button>
+                        </form>
+                    {% else %}
+                        <form action="{% url 'tweet_unsave' tweet.id %}" method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Unsave</button>
+                        </form>
+                    {% endif %}
+
+                    <a href="{% url 'tweet_detail' tweet.id %}" class="btn btn-outline-secondary btn-sm">💬 Comment</a>
+                    <a href="{% url 'tweet_repost' tweet.id %}?next={{ request.path }}" class="btn btn-outline-success btn-sm">🔁 Retweet</a>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+
+</div>
+{% endblock %}

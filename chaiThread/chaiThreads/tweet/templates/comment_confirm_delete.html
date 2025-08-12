@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block title %}Delete comment {{comment.id}}{% endblock %}
+{% block content %}
+<h1 class="text-center mt-4">Do you want to delete your comment?</h1>
+
+<h2>
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger">Delete</button>
+        <a href="{% url "tweet_list" %}" class="btn btn-success">Cancel</a>
+    </form>
+</h2>
+{% endblock %}

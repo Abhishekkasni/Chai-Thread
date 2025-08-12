@@ -1,0 +1,158 @@
+{% extends "layout.html" %}
+{% load time_format %}
+{% block title %}Post {{tweet.id}} by {{tweet.user.username}}{% endblock %}
+{% block content %}
+<div class="container d-flex flex-column align-items-center">
+  <div class="card w-100 border rounded mb-3" style="max-width: 600px;">
+              
+              {% if tweet.original_tweet %}
+                  <div class="card-header text-muted" style="font-size: 0.9rem;">
+                      🔁 Reposted from 
+                      <a href="{% url 'profile' tweet.original_tweet.user.username %}" class="text-decoration-none">
+                          @{{ tweet.original_tweet.user.username }}
+                      </a>
+                  </div>
+              {% endif %}
+  
+              {% if tweet.photo %}
+                  <img src="{{ tweet.photo.url }}" class="card-img-top" alt="Tweet image">
+              {% endif %}
+  
+              {% if tweet.video %}
+                  <video class="card-img-top" controls>
+                      <source src="{{ tweet.video.url }}" type="video/mp4">
+                      Your browser does not support the video tag.
+                  </video>
+              {% endif %}
+  
+              <div class="card-body">
+                  <h5 class="card-title">
+                      <a href="{% url 'profile' tweet.user.username %}" class="text-decoration-none">
+                          {{ tweet.user.username }}
+                      </a>
+                  </h5>
+  
+                  {% if tweet.text %}
+                      <p class="card-text">{{ tweet.text }}</p>
+                  {% endif %}
+  
+                  {% if tweet.original_tweet %}
+                      <div class="border rounded p-2 mt-2">
+                          <strong>@{{ tweet.original_tweet.user.username }}</strong><br>
+                          {{ tweet.original_tweet.text }}
+                          {% if tweet.original_tweet.photo %}
+                              <img src="{{ tweet.original_tweet.photo.url }}" class="img-fluid mt-2" alt="Original tweet image">
+                          {% endif %}
+                          {% if tweet.original_tweet.video %}
+                              <video class="w-100 mt-2" controls>
+                                  <source src="{{ tweet.original_tweet.video.url }}" type="video/mp4">
+                                  Your browser does not support the video tag.
+                              </video>
+                          {% endif %}
+                      </div>
+                  {% endif %}
+  
+                  <p class="card-text text-muted" style="font-size: 0.9rem;" title="{{ tweet.created_at }}">
+                      {{ tweet.created_at|twitter_time }} 
+                  </p>
+  
+                  {% if tweet.user == user %}
+                      <a href="{% url "tweet_edit" tweet.id %}?next={{ request.path }}" class="btn btn-primary">Edit</a>
+                      <a href="{% url "tweet_delete" tweet.id %}?next={{ request.path }}" class="btn btn-danger">Delete</a>
+                  {% endif %}
+  
+                  {% if request.user.is_authenticated %}
+                      {% if tweet not in request.user.saved_tweets.all %}
+                          <form action="{% url 'save_tweet' tweet.id %}" method="POST" class="d-inline">
+                              {% csrf_token %}
+                              <button type="submit" class="btn btn-outline-primary btn-sm">💾 Save</button>
+                          </form>
+                      {% else %}
+                          <form action="{% url 'tweet_unsave' tweet.id %}" method="POST" class="d-inline">
+                              {% csrf_token %}
+                              <button type="submit" class="btn btn-outline-danger btn-sm">Unsave</button>
+                          </form>
+                      {% endif %}
+  
+                      <a href="{% url 'tweet_detail' tweet.id %}" class="btn btn-outline-secondary btn-sm">💬 Comment</a>
+                      <a href="{% url 'tweet_repost' tweet.id %}?next={{ request.path }}" class="btn btn-outline-success btn-sm">🔁 Retweet</a>
+                  {% endif %}
+              </div>
+          </div>
+  
+      <!-- 💬 New Comment Form Card -->
+      <div class="card w-100 border mb-4" style="max-width: 600px;">
+          <div class="card-header">Leave a Comment</div>
+          <div class="card-body">
+              <form method="POST">
+                  {% csrf_token %}
+                  {{ form.as_p }}
+                  <input type="hidden" name="parent_id" id="parent_id_input">
+                  <button type="submit" class="btn btn-primary btn-sm">Post</button>
+              </form>
+          </div>
+      </div>
+  
+      <!-- 🧵 Display Comments -->
+    {% for comment in top_comments %}
+    <div class="card w-100 border mb-3" style="max-width: 600px;">
+      <div class="card-body">
+        <h6 class="card-title">
+          <a href="{% url 'profile' comment.author.username %}" class="text-decoration-none">
+            {{ comment.author.username }}
+          </a>
+        </h6>
+        <p class="card-text">{{ comment.body }}</p>
+        <p class="card-text text-muted" style="font-size: 0.8rem;">
+          {{ comment.created_at|twitter_time }}
+        </p>
+        {% if comment.author == user %}
+          <form method="POST" action="{% url 'delete_comment' comment.id %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-danger">🗑️ Delete</button>
+          </form>
+        {% endif %}
+
+  
+        <!-- 🖊️ Inline reply form for this comment -->
+        <form method="POST" class="mt-3">
+          {% csrf_token %}
+          {{ form.body }}
+          <input type="hidden" name="parent_id" value="{{ comment.id }}">
+          <button type="submit" class="btn btn-sm btn-outline-secondary">↩ Reply</button>
+        </form>
+      </div>
+  
+      {% for reply in comment.replies.all %}
+        <div class="card-body border-top ms-4 me-2 ps-3 mt-2">
+          <h6 class="card-title">
+            <a href="{% url 'profile' reply.author.username %}" class="text-decoration-none">
+              {{ reply.author.username }}
+            </a>
+          </h6>
+          <p class="card-text">{{ reply.body }}</p>
+          <p class="card-text text-muted" style="font-size: 0.8rem;">
+            {{ reply.created_at|twitter_time }}
+          </p>
+          <form method="POST" class="mt-3">
+          {% csrf_token %}
+          {{ form.body }}
+          <input type="hidden" name="parent_id" value="{{ comment.id }}">
+          <button type="submit" class="btn btn-sm btn-outline-secondary">↩ Reply</button>
+        </form>
+          {% if reply.author == user %}
+            <form method="POST" action="{% url 'delete_comment' reply.id %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger">🗑️ Delete</button>
+            </form>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+  
+  </div>
+
+</div>
+
+{% endblock %}

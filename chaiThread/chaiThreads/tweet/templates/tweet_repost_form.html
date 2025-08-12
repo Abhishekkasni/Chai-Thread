@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block title %}Repost {{ original.id }} from {{ original.user.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 600px;">
+    <h3 class="mb-3">🔁 Reposting from @{{ original.user.username }}</h3>
+
+    <!-- Original tweet preview -->
+    <div class="card mb-4">
+        {% if original.photo %}
+            <img src="{{ original.photo.url }}" class="card-img-top" alt="Original tweet image">
+        {% endif %}
+        {% if original.video %}
+            <video class="card-img-top" controls>
+                <source src="{{ original.video.url }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        {% endif %}
+        <div class="card-body">
+            <h5 class="card-title">@{{ original.user.username }}</h5>
+            <p class="card-text">{{ original.text }}</p>
+            <p class="card-text text-muted" style="font-size: 0.9rem;">
+                {{ original.created_at|date:"M d, Y H:i" }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Repost form -->
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_text" class="form-label">Add a quote (optional)</label>
+            {{ form.text }}
+        </div>
+        <div class="mb-3">
+            <label for="id_photo" class="form-label">Attach a photo (optional)</label>
+            {{ form.photo }}
+        </div>
+        <div class="mb-3">
+            <label for="id_video" class="form-label">Attach a video (optional)</label>
+            {{ form.video }}
+        </div>
+        <input type="hidden" name="next" value="{{ next }}">
+        <button type="submit" class="btn btn-success">🔁 Repost</button>
+        <a href="{{ next }}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div>
+{% endblock %}
